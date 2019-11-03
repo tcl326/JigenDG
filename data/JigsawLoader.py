@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import torch
 import torch.utils.data as data
@@ -37,6 +39,31 @@ def _dataset_info(txt_labels):
         labels.append(int(row[1]))
 
     return file_names, labels
+
+
+def _bao_data_info(txt_labels):
+    with open(txt_labels, 'r') as f:
+        images_list = f.readlines()
+    
+    file_names = []
+    labels = []
+    for row in images_list:
+        row_split = row.split('/')
+        file_names.append(row)
+        labels.append(row_split[-2])
+    sorted_label = sorted(list(set(labels)))
+    label_map = {label: i for i, label in enumerate(sorted_label)}
+    
+    for i in range(len(labels)):
+        labels[i] = label_map[labels[i]]
+
+    return file_names, labels
+    
+
+def get_bao_split_dataset_info(dataset_path):
+    train_name, train_label = _bao_data_info(os.path.join(dataset_path, 'train.txt'))
+    val_name, val_label = _bao_data_info(os.path.join(dataset_path, 'val.txt'))
+    return train_name, val_name, train_label, val_label
 
 
 def get_split_dataset_info(txt_list, val_percentage):
